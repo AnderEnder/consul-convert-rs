@@ -1,0 +1,18 @@
+[package]
+name = "consul-convert"
+version = "0.1.0"
+authors = ["ander <andrii.radyk@sizmek.com>"]
+
+[dependencies]
+structopt = "0.2.10"
+clap = "2.31.2"
+serde_json = "1"
+serde = "1"
+serde_derive = "1"
+walkdir = "2.1.4"
+base64 = "0.9"
+failure = "0.1"
+slurp = "1"
+
+[profile.release]
+lto = true
