@@ -2,13 +2,17 @@
 extern crate structopt;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
 extern crate base64;
 extern crate failure;
+extern crate regex;
 extern crate serde_json;
 extern crate slurp;
 extern crate walkdir;
 
 use failure::Error;
+use regex::Regex;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -26,7 +30,7 @@ struct Args {
     #[structopt(name = "dest", long = "dest", parse(from_os_str))]
     dest: PathBuf,
 
-    /// Path to export consul data file
+    /// Key path to prepare all consul keys under
     #[structopt(name = "key-path", long = "key-path")]
     key_path: String,
 }
@@ -38,12 +42,19 @@ struct Record {
     flags: u8,
 }
 
+lazy_static! {
+    static ref RE: Regex = Regex::new(r#"/$"#).unwrap();
+}
+
 fn record(src: &Path, path: &str) -> Record {
-    let key = src.file_name().unwrap();
+    let key = src.file_name().unwrap().to_str().unwrap();
+
+    let fixed_path = RE.replace(path, "");
+
     let value = base64::encode(&slurp::read_all_to_string(src).unwrap());
-    println!("Record {}", &key.to_str().unwrap());
+    println!("Record {}", &key);
     Record {
-        key: format!("{}/{}", path, key.to_str().unwrap()),
+        key: format!("{}/{}", fixed_path, &key),
         value,
         flags: 0,
     }
